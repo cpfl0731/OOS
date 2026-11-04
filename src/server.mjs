@@ -1,6 +1,6 @@
 /**
  * OOS local proxy — keeps GEMINI_API_KEY on the server only.
- * Run: node server.mjs
+ * Run from project root: node src/server.mjs
  * Open: http://localhost:8787
  */
 import http from "http";
@@ -9,7 +9,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = __dirname;
+/** Project root (one level above src/) — serves index.html, js/, assets/, .env */
+const ROOT = path.resolve(__dirname, "..");
 
 function loadEnv(filePath) {
   const env = {};

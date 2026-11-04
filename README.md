@@ -22,7 +22,7 @@ GEMINI_API_KEY=your_key_here
 선택: Node 프록시 서버
 
 ```bash
-node server.mjs
+node src/server.mjs
 # http://localhost:8787
 ```
 
@@ -36,16 +36,15 @@ node server.mjs
 OOS/
   index.html
   styles.css
-  server.mjs          # 선택: 정적 + Gemini 프록시
-  js/
-    data.js           # 업종·상황·문장
-    app.js            # UI
-    storage.js
-    speech.js
-    gemini.js
-    practice-demo.js
-    helper-ui.js
+  README.md
+  .gitignore
+  js/                 # 프론트 로직
   assets/
+  src/
+    server.mjs        # 선택: 정적 + Gemini 프록시
+  docs/
+    사용방법.txt
+    커서_프롬프트.txt
 ```
 
 문장·상황을 바꾸려면 `js/data.js`의 `SITUATIONS` / `INDUSTRIES`를 수정한 뒤 새로고침하면 됩니다.

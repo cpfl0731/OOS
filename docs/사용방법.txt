@@ -29,18 +29,19 @@ B) Gemini AI 쓰기 (연습 손님 멘트 · 회화/단어) — 브라우저 CDN
 OOS/
   index.html          ← 시작 화면
   styles.css          ← 디자인
-  server.mjs          ← Gemini 프록시 + 정적 서버 (키는 여기만)
   .env                ← GEMINI_API_KEY (절대 공개/커밋 금지)
-  .env.example        ← 키 자리 예시
   js/
     data.js           ← 상황·영어 문장
     storage.js        ← 기기 저장
     speech.js         ← 발음 듣기
-    gemini.js         ← 프론트 Gemini 연동 (키 없음, /api/gemini 호출)
+    gemini.js         ← 프론트 Gemini 연동 (.env / CDN)
     practice-demo.js  ← 연습 (Gemini 손님 멘트 → 실패 시 로컬 폴백)
     app.js            ← 화면·버튼 동작
-  커서_프롬프트.txt
-  사용방법.txt
+  src/
+    server.mjs        ← Gemini 프록시 + 정적 서버 (node src/server.mjs)
+  docs/
+    커서_프롬프트.txt
+    사용방법.txt
 
 
 3. 문장·상황 수정하는 법
