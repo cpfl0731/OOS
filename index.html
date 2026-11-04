@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#fffbf2" />
+  <title>OOS — Only One Sentence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Gemini CDN: js/gemini.js 가 .env 의 GEMINI_API_KEY 사용 -->
+  <script type="importmap">
+  {
+    "imports": {
+      "@google/genai": "https://esm.sh/@google/genai@1.30.0"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- 알바 영어 도우미 예시 UI (#app 밖 — SPA 렌더에 안 지워짐) -->
+  <div id="oos-helper" class="oos-helper" aria-live="polite">
+    <button type="button" id="oos-helper-fab" class="oos-helper-fab" aria-label="알바 영어 도우미 열기">도우미</button>
+    <div id="oos-helper-panel" class="oos-helper-panel" role="dialog" aria-label="알바 영어 도우미">
+      <header class="oos-helper-head">
+        <strong>알바 영어 도우미</strong>
+        <button type="button" id="oos-helper-close" class="oos-helper-x" aria-label="닫기">×</button>
+      </header>
+      <div class="oos-helper-tabs">
+        <button type="button" class="is-on" data-helper-tab="roleplay">역할극</button>
+        <button type="button" data-helper-tab="translate">번역</button>
+        <button type="button" data-helper-tab="tts">듣기·마이크</button>
+      </div>
+
+      <!-- 1) 역할극 + 피드백 -->
+      <section data-helper-pane="roleplay">
+        <label class="helper-label">업종</label>
+        <select id="helper-rp-industry">
+          <option>카페</option>
+          <option>편의점</option>
+          <option>식당</option>
+          <option>뷰티샵</option>
+        </select>
+        <label class="helper-label">어려웠던 상황 (한국어)</label>
+        <textarea id="helper-rp-situation" rows="2" placeholder="예: 카드가 안 될 때 다른 결제 수단을 안내하는 게 어려웠어요"></textarea>
+        <button type="button" id="helper-rp-start" class="helper-btn helper-btn-primary">역할극 시작</button>
+        <div id="helper-rp-chat" class="helper-chat" aria-label="역할극 대화"></div>
+        <label class="helper-label">내 영어 답변</label>
+        <textarea id="helper-rp-answer" rows="2" placeholder="영어로 답하기"></textarea>
+        <div class="helper-row">
+          <button type="button" id="helper-rp-mic" class="helper-btn">🎙️ 말하기</button>
+          <button type="button" id="helper-rp-send" class="helper-btn helper-btn-primary">보내기 + 피드백</button>
+        </div>
+        <div id="helper-rp-feedback" class="helper-feedback"></div>
+        <p id="helper-rp-status" class="helper-status"></p>
+      </section>
+
+      <!-- 2) 번역 -->
+      <section data-helper-pane="translate" hidden>
+        <label class="helper-label">업종</label>
+        <select id="helper-tr-industry">
+          <option>카페</option>
+          <option>편의점</option>
+          <option>식당</option>
+          <option>뷰티샵</option>
+        </select>
+        <label class="helper-label">한국어</label>
+        <textarea id="helper-tr-ko" rows="2" placeholder="예: 잠시만 기다려 주세요. 확인해 볼게요."></textarea>
+        <button type="button" id="helper-tr-run" class="helper-btn helper-btn-primary">영어로 번역</button>
+        <p class="helper-label">영어</p>
+        <p id="helper-tr-en" class="helper-out-en"></p>
+        <p id="helper-tr-note" class="helper-ko"></p>
+        <button type="button" id="helper-tr-speak" class="helper-btn">🔊 읽어주기</button>
+        <p id="helper-tr-status" class="helper-status"></p>
+      </section>
+
+      <!-- 3·4) TTS / STT -->
+      <section data-helper-pane="tts" hidden>
+        <label class="helper-label">영어 문장 (TTS)</label>
+        <textarea id="helper-tts-text" rows="2">Please wait a moment. I'll check that for you.</textarea>
+        <div class="helper-row">
+          <button type="button" id="helper-tts-run" class="helper-btn helper-btn-primary">🔊 읽기</button>
+          <button type="button" id="helper-tts-stop" class="helper-btn">중지</button>
+        </div>
+        <p id="helper-tts-status" class="helper-status"></p>
+        <p class="helper-hint">마이크 인식은 역할극 탭의 「말하기」 버튼을 사용하세요. (Chrome/Edge + 마이크 권한)</p>
+      </section>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/speech.js"></script>
+  <script type="module" src="js/gemini.js"></script>
+  <script src="js/practice-demo.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/helper-ui.js"></script>
+</body>
+</html>

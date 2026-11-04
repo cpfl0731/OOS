@@ -1,0 +1,26 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="빨간 서비스 바이저를 쓴 노란 앵무새 캐릭터">
+<!-- 다리 -->
+  <path d="M50 108 V100 M43 108 H57 M70 108 V100 M63 108 H77" stroke="#FF9F1C" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- 볏(머리 깃) -->
+  <path d="M50 40 Q37 24 45 8 Q58 18 60 40 Z" fill="#FFE500" stroke="#111" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M60 38 Q62 14 77 8 Q79 26 69 42 Z" fill="#FFE500" stroke="#111" stroke-width="3.5" stroke-linejoin="round"/>
+  <!-- 날개 -->
+  <ellipse cx="20" cy="74" rx="9" ry="17" transform="rotate(-15 20 74)" fill="#5FBF6B" stroke="#111" stroke-width="3.5"/>
+  <ellipse cx="100" cy="74" rx="9" ry="17" transform="rotate(15 100 74)" fill="#5FBF6B" stroke="#111" stroke-width="3.5"/>
+  <!-- 몸통 -->
+  <ellipse cx="60" cy="68" rx="38" ry="36" fill="#FFE500" stroke="#111" stroke-width="3.5"/>
+  <!-- 볼 -->
+  <ellipse cx="35" cy="70" rx="7" ry="6" fill="#FF9F1C"/>
+  <ellipse cx="85" cy="70" rx="7" ry="6" fill="#FF9F1C"/>
+  <!-- 눈 -->
+  <circle cx="46" cy="58" r="5.5" fill="#111"/>
+  <circle cx="74" cy="58" r="5.5" fill="#111"/>
+  <circle cx="48" cy="56" r="2" fill="#fff"/>
+  <circle cx="76" cy="56" r="2" fill="#fff"/>
+  <!-- 부리 -->
+  <path d="M52 66 Q60 63 68 66 Q68 78 60 82 Q52 78 52 66 Z" fill="#FF9F1C" stroke="#111" stroke-width="3" stroke-linejoin="round"/>
+  <!-- 서비스 바이저: 챙이 짧고 밴드가 얇아 일반 썬캡보다 응대용 느낌 -->
+  <path d="M32 48 Q60 34 88 48 Q86 54 78 52 Q60 44 42 52 Q34 54 32 48 Z" fill="#E63946" stroke="#111" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M34 48 Q60 38 86 48" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round" opacity="0.35"/>
+
+</svg>
