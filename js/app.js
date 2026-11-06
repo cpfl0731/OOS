@@ -15,7 +15,6 @@
     slots: {},
     guestOpen: false,
     guestChoices: null,
-    toast: null,
     modal: null, // confirm dialogs
     industryPopup: false, // center popup for industry
     phraseFilter: null, // industry id; null → current work industry
@@ -35,6 +34,7 @@
   };
 
   let splashScheduled = false;
+  let toastTimer = null;
 
   // Smooth confirm: overlay without wiping the page (avoids flicker)
   function showConfirm(opts) {
@@ -68,14 +68,109 @@
     if (el) el.remove();
   }
 
+  function hideIndustryPopup() {
+    state.industryPopup = false;
+    const el = document.getElementById("oos-industry-popup");
+    if (el) el.remove();
+  }
+
+  function showIndustryPopup() {
+    hideIndustryPopup();
+    state.industryPopup = true;
+    const current = industryId();
+    const back = document.createElement("div");
+    back.id = "oos-industry-popup";
+    back.className = "popup-back";
+    back.setAttribute("role", "presentation");
+    back.innerHTML = `<div class="popup-card popup-card-compact" role="dialog" aria-modal="true" aria-label="업종 변경">
+      <div class="popup-industry-grid">
+        ${D.INDUSTRIES.map(
+          (i) =>
+            `<button type="button" class="popup-tile ${current === i.id ? "is-current" : ""}" data-industry="${i.id}">
+              <span class="ico" aria-hidden="true">${i.icon}</span>
+              <span class="label">${i.label}</span>
+            </button>`
+        ).join("")}
+      </div>
+    </div>`;
+    back.addEventListener("click", (e) => {
+      if (e.target === back) hideIndustryPopup();
+    });
+    back.querySelectorAll("[data-industry]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        selectIndustry(btn.getAttribute("data-industry"));
+      });
+    });
+    document.body.appendChild(back);
+  }
+
+  function hideQuickPractice() {
+    state.practiceQuickPick = false;
+    const el = document.getElementById("oos-quick-practice");
+    if (el) el.remove();
+  }
+
+  function showQuickPractice() {
+    hideQuickPractice();
+    state.practiceQuickPick = true;
+    const back = document.createElement("div");
+    back.id = "oos-quick-practice";
+    back.className = "popup-back";
+    back.setAttribute("role", "presentation");
+    back.innerHTML = `<div class="popup-card popup-card-confirm" role="dialog" aria-modal="true" aria-label="연습 방식">
+      <h3 class="popup-title">어떻게 연습할까요?</h3>
+      <p class="popup-sub">Text나 Voice 중 하나를 고르면 바로 시작해요.</p>
+      <div class="btn-row">
+        <button type="button" class="btn btn-secondary" data-qp="text">⌨️ Text</button>
+        <button type="button" class="btn btn-primary" data-qp="voice">🎙️ Voice</button>
+      </div>
+    </div>`;
+    back.addEventListener("click", (e) => {
+      if (e.target === back) hideQuickPractice();
+    });
+    back.querySelector('[data-qp="text"]').addEventListener("click", async (e) => {
+      e.stopPropagation();
+      hideQuickPractice();
+      const ind = state.phraseFilter || industryId() || "cafe";
+      const res = await Practice.startFromSituation(state.situationId, ind, "text");
+      beginPracticeSession(res, {
+        mode: "text",
+        industryId: ind,
+        returnTo: "phrases",
+      });
+    });
+    back.querySelector('[data-qp="voice"]').addEventListener("click", async (e) => {
+      e.stopPropagation();
+      hideQuickPractice();
+      const ind = state.phraseFilter || industryId() || "cafe";
+      const res = await Practice.startFromSituation(state.situationId, ind, "voice");
+      beginPracticeSession(res, {
+        mode: "voice",
+        industryId: ind,
+        returnTo: "phrases",
+      });
+    });
+    document.body.appendChild(back);
+  }
+
+  /** Toast without full re-render (avoids page remount flicker) */
   function toast(msg) {
-    state.toast = msg;
-    render();
-    setTimeout(() => {
-      if (state.toast === msg) {
-        state.toast = null;
-        render();
-      }
+    let el = document.getElementById("oos-toast");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "oos-toast";
+      el.className = "toast";
+      el.setAttribute("role", "status");
+      document.body.appendChild(el);
+    }
+    el.textContent = String(msg == null ? "" : msg);
+    el.style.animation = "none";
+    void el.offsetWidth;
+    el.style.animation = "";
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      if (el && el.parentNode) el.remove();
     }, 2200);
   }
 
@@ -86,7 +181,9 @@
   function goOnboarding() {
     state.view = "onboarding";
     state.tab = "work";
-    state.industryPopup = false;
+    hideIndustryPopup();
+    hideQuickPractice();
+    hideConfirm();
     render();
   }
 
@@ -94,7 +191,7 @@
     Store.setIndustryId(id);
     state.view = "home";
     state.tab = "work";
-    state.industryPopup = false;
+    hideIndustryPopup();
     state.phraseFilter = id;
     toast(D.getIndustry(id).label + "으로 변경했어요");
     render();
@@ -111,7 +208,7 @@
     state.view = "flow";
     state.guestOpen = false;
     state.fromPhrases = !!opts.fromPhrases;
-    state.practiceQuickPick = false;
+    hideQuickPractice();
     render();
   }
 
@@ -142,6 +239,7 @@
   }
 
   function goHomeFlow() {
+    hideQuickPractice();
     if (state.fromPhrases) {
       state.tab = "phrases";
       state.view = "home";
@@ -264,7 +362,7 @@
     Speech.stop();
     state.practiceSession = res;
     state.practiceDraft = "";
-    state.practiceQuickPick = false;
+    hideQuickPractice();
     state.tab = "practice";
     state.view = "home";
     state.fromPhrases = false;
@@ -415,11 +513,6 @@
     );
   }
 
-  function toastHtml() {
-    if (!state.toast) return "";
-    return `<div class="toast" role="status">${esc(state.toast)}</div>`;
-  }
-
   function modalHtml() {
     if (!state.modal) return "";
     const m = state.modal;
@@ -430,25 +523,6 @@
         <div class="btn-row">
           <button type="button" class="btn btn-secondary" data-action="modal-cancel">취소</button>
           <button type="button" class="btn btn-danger" data-action="modal-ok">${esc(m.okLabel || "확인")}</button>
-        </div>
-      </div>
-    </div>`;
-  }
-
-  /** Centered instant popup — not a bottom sheet */
-  function industryPopupHtml() {
-    if (!state.industryPopup) return "";
-    const current = industryId();
-    return `<div class="popup-back" data-action="close-industry-popup" role="presentation">
-      <div class="popup-card popup-card-compact" role="dialog" aria-modal="true" aria-label="업종 변경" onclick="event.stopPropagation()">
-        <div class="popup-industry-grid">
-          ${D.INDUSTRIES.map(
-            (i) =>
-              `<button type="button" class="popup-tile ${current === i.id ? "is-current" : ""}" data-industry="${i.id}">
-                <span class="ico" aria-hidden="true">${i.icon}</span>
-                <span class="label">${i.label}</span>
-              </button>`
-          ).join("")}
         </div>
       </div>
     </div>`;
@@ -586,20 +660,6 @@
         }
       </div>
       ${choicesHtml}
-      ${
-        state.practiceQuickPick && state.fromPhrases
-          ? `<div class="popup-back" data-action="close-quick-practice" role="presentation">
-              <div class="popup-card popup-card-confirm" role="dialog" aria-modal="true" aria-label="연습 방식" onclick="event.stopPropagation()">
-                <h3 class="popup-title">어떻게 연습할까요?</h3>
-                <p class="popup-sub">Text나 Voice 중 하나를 고르면 바로 시작해요.</p>
-                <div class="btn-row">
-                  <button type="button" class="btn btn-secondary" data-action="quick-practice-text">⌨️ Text</button>
-                  <button type="button" class="btn btn-primary" data-action="quick-practice-voice">🎙️ Voice</button>
-                </div>
-              </div>
-            </div>`
-          : ""
-      }
     </div>`;
   }
 
@@ -970,9 +1030,7 @@
       brandHtml() +
       main +
       navHtml() +
-      toastHtml() +
       modalHtml() +
-      industryPopupHtml() +
       (state.guestOpen ? renderGuest() : "");
 
     const log = document.getElementById("chat-log");
@@ -1112,12 +1170,12 @@
         state.view = "home";
         state.fromPhrases = false;
         state.guestOpen = false;
-        state.industryPopup = false;
+        hideIndustryPopup();
+        hideQuickPractice();
         if (state.tab !== "practice") {
           state.practiceMode = null;
           state.practiceIndustry = null;
           state.practiceSession = null;
-          state.practiceQuickPick = false;
           state.practiceReturn = null;
         }
         state.swipeOpenId = null;
@@ -1222,7 +1280,6 @@
     appEl.querySelectorAll("[data-practice-start]").forEach((el) => {
       el.addEventListener("click", async () => {
         const sitId = el.getAttribute("data-practice-start");
-        toast("손님 말 준비 중…");
         const res = await Practice.startFromSituation(
           sitId,
           state.practiceIndustry,
@@ -1237,14 +1294,8 @@
 
     const actions = {
       sos: openSos,
-      "open-industry-popup": () => {
-        state.industryPopup = true;
-        render();
-      },
-      "close-industry-popup": () => {
-        state.industryPopup = false;
-        render();
-      },
+      "open-industry-popup": () => showIndustryPopup(),
+      "close-industry-popup": () => hideIndustryPopup(),
       "expand-favs": () => {
         state.favsExpanded = true;
         render();
@@ -1260,34 +1311,8 @@
       guest: openGuest,
       "guest-close": closeGuest,
       "goto-manager": () => goNode("manager"),
-      "open-quick-practice": () => {
-        state.practiceQuickPick = true;
-        render();
-      },
-      "close-quick-practice": () => {
-        state.practiceQuickPick = false;
-        render();
-      },
-      "quick-practice-text": async () => {
-        const ind = state.phraseFilter || industryId() || "cafe";
-        toast("손님 말 준비 중…");
-        const res = await Practice.startFromSituation(state.situationId, ind, "text");
-        beginPracticeSession(res, {
-          mode: "text",
-          industryId: ind,
-          returnTo: "phrases",
-        });
-      },
-      "quick-practice-voice": async () => {
-        const ind = state.phraseFilter || industryId() || "cafe";
-        toast("손님 말 준비 중…");
-        const res = await Practice.startFromSituation(state.situationId, ind, "voice");
-        beginPracticeSession(res, {
-          mode: "voice",
-          industryId: ind,
-          returnTo: "phrases",
-        });
-      },
+      "open-quick-practice": () => showQuickPractice(),
+      "close-quick-practice": () => hideQuickPractice(),
       "practice-exit": () => {
         stopListen();
         Speech.stop();

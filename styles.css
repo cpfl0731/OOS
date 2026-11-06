@@ -73,17 +73,17 @@ input, textarea, select {
 /* —— Layout —— */
 .page {
   padding: 16px 16px 10px;
-  animation: riseIn 0.28s var(--ease);
-}
-
-@keyframes riseIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: none; }
+  /* no enter animation — full re-render would replay it and look like flicker */
 }
 
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 .page-title {
@@ -1278,7 +1278,6 @@ input, textarea, select {
   margin: 0 auto;
   left: 0;
   right: 0;
-  animation: fadeIn 0.16s ease;
 }
 
 .popup-back.popup-smooth {
@@ -1578,8 +1577,9 @@ input, textarea, select {
   z-index: 220;
   max-width: calc(100% - 32px);
   text-align: center;
-  animation: riseIn 0.22s var(--ease);
+  animation: toastIn 0.22s var(--ease);
   box-shadow: var(--shadow-lift);
+  pointer-events: none;
 }
 
 .hidden { display: none !important; }
